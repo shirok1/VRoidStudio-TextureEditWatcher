@@ -118,7 +118,7 @@ namespace Shiroki.VRoidStudioPlugin.TextureEditWatcher
             public static void FakeWriteAllBytes(string path, byte[] bytes)
             {
                 File.WriteAllBytes(path, bytes);
-                if (_currentWatcher != null)
+                if (string.Equals(_currentWatcher.FileName, new FileInfo(path).Name))
                 {
                     Process.Start(_imageEditorPathConfig.Value, "\"" + path + "\"");
                     _logger.LogMessage("Starting external image editor");
