@@ -6,6 +6,7 @@ using System.IO;
 using System.Reflection;
 using System.Reflection.Emit;
 using BepInEx;
+using BepInEx.Configuration;
 using BepInEx.Logging;
 using HarmonyLib;
 using SketchUniversal;
@@ -17,9 +18,16 @@ namespace Shiroki.VRoidStudioPlugin.TextureEditWatcher
     public class TextureLayerPatch : BaseUnityPlugin
     {
         private const string PluginGuid = "Shiroki.VRoidStudioPlugin.TextureEditWatcher";
-        private const string ImageEditorPath = @"C:\Windows\System32\mspaint.exe";
         private static Harmony _harmonyInstance;
         private static ManualLogSource _logger;
+
+        private static ConfigEntry<string> _imageEditorPathConfig;
+
+        public void Awake()
+        {
+            _imageEditorPathConfig = Config.Bind("Config", "ImageEditorPath",
+                @"C:\Windows\System32\mspaint.exe", "Path to image editor executable");
+        }
 
         public void Start()
         {
@@ -112,7 +120,7 @@ namespace Shiroki.VRoidStudioPlugin.TextureEditWatcher
                 File.WriteAllBytes(path, bytes);
                 if (_currentWatcher != null)
                 {
-                    Process.Start(ImageEditorPath, "\"" + path + "\"");
+                    Process.Start(_imageEditorPathConfig.Value, "\"" + path + "\"");
                     _logger.LogMessage("Starting external image editor");
                 }
             }
