@@ -4,6 +4,8 @@ Adding "Edit Externally Once" to texture layer context menu.
 
 ![image](https://user-images.githubusercontent.com/12044683/111904245-e35e7f00-8a80-11eb-9353-74d7258cbcc1.png)
 
+![gif](https://user-images.githubusercontent.com/12044683/111905437-95e51080-8a86-11eb-96dd-3715376ad3d1.gif)
+
 ## Usage
 
 This plugin works as a [BepInEx](https://github.com/BepInEx/BepInEx) plugin. Put this dll in `(VRoid Studio root folder)/BepInEx/plugins` and done.
