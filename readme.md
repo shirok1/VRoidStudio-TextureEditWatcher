@@ -6,7 +6,9 @@ Adding "Edit Externally Once" to texture layer context menu.
 
 ## Usage
 
-This plugin works as a [BepInEx](https://github.com/BepInEx/BepInEx) plugin. Put this dll in (VRoid Studio root folder)/BepInEx/plugins and done.
+This plugin works as a [BepInEx](https://github.com/BepInEx/BepInEx) plugin. Put this dll in `(VRoid Studio root folder)/BepInEx/plugins` and done.
+
+Default image editor is MS Paint. Change it in `(VRoid Studio root folder)/BepInEx/config/Shiroki.VRoidStudioPlugin.TextureEditWatcher.cfg`.
 
 ## Build
 
