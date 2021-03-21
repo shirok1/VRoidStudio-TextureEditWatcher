@@ -107,7 +107,7 @@ namespace Shiroki.VRoidStudioPlugin.TextureEditWatcher
             public static IEnumerable<CodeInstruction> ElcCallbackPatch(IEnumerable<CodeInstruction> instructions)
             {
                 MethodInfo writeAllBytesInfo = AccessTools.Method(typeof(File), nameof(File.WriteAllBytes));
-                MethodInfo fakeWriteAllBytesInfo = AccessTools.Method(typeof(MyPatch), nameof(FakeWriteAllBytes));
+                MethodInfo fakeWriteAllBytesInfo = AccessTools.Method(typeof(MyPatch), nameof(FakeWriteAllBytesForElcCallback));
                 foreach (CodeInstruction code in instructions)
                     if (code.opcode == OpCodes.Call && (MethodInfo) code.operand == writeAllBytesInfo)
                         yield return new CodeInstruction(OpCodes.Call, fakeWriteAllBytesInfo);
@@ -115,7 +115,7 @@ namespace Shiroki.VRoidStudioPlugin.TextureEditWatcher
                         yield return code;
             }
 
-            public static void FakeWriteAllBytes(string path, byte[] bytes)
+            public static void FakeWriteAllBytesForElcCallback(string path, byte[] bytes)
             {
                 File.WriteAllBytes(path, bytes);
                 if (string.Equals(_currentWatcher.FileName, new FileInfo(path).Name))
