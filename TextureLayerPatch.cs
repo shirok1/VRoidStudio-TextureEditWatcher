@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
 using BepInEx;
@@ -51,27 +52,25 @@ namespace Shiroki.VRoidStudioPlugin.TextureEditWatcher
 
             // Find the anonymous SketchPlugin.EnqueueCommand callback function in ExportLayerCoroutine
             Logger.LogMessage("Patching 'EnqueueCommand' callback in 'ExportLayerCoroutine'...");
-            Type vmType = AccessTools.TypeByName("VRoidStudio.GUI.AvatarEditor.TextureEditor.TextureEditorViewModel");
-            MethodInfo elcCallback = null;
-            foreach (Type nestType in vmType.GetNestedTypes(AccessTools.all))
-            foreach (MethodInfo method in nestType.GetMethods(AccessTools.allDeclared))
-                if (method.GetParameters().Length != 0
-                    && method.GetParameters()[0].ParameterType == typeof(IResponsePayload)
-                    && method.Name.Contains("<ExportLayerCoroutine>"))
-                {
-                    Logger.LogMessage($"Anonymous callback found in class: {nestType} method:{method.Name}");
-                    elcCallback = method;
-                }
-
-            if (elcCallback == null)
+            var matchedMethods =
+                AccessTools.TypeByName("VRoidStudio.GUI.AvatarEditor.TextureEditor.TextureEditorViewModel")
+                    .GetNestedTypes(AccessTools.all)
+                    .SelectMany(type => type.GetMethods(AccessTools.allDeclared))
+                    .Where(method => method.GetParameters().Length != 0
+                                     && method.GetParameters()[0].ParameterType == typeof(IResponsePayload)
+                                     && method.Name.Contains("<ExportLayerCoroutine>")).ToArray();
+            if (matchedMethods.Any())
             {
                 Logger.LogError("Can't find 'EnqueueCommand' callback!");
             }
             else
             {
-                _harmonyInstance.Patch(elcCallback,
-                    transpiler: new HarmonyMethod(typeof(MyPatch), nameof(MyPatch.ElcCallbackPatch)));
-                Logger.LogMessage("Patched 'ExportLayerCoroutine'");
+                foreach (var method in matchedMethods)
+                {
+                    _harmonyInstance.Patch(method,
+                        transpiler: new HarmonyMethod(typeof(MyPatch), nameof(MyPatch.ElcCallbackPatch)));
+                    Logger.LogMessage($"Patched '{method.Name}'");
+                }
             }
         }
 
@@ -107,7 +106,8 @@ namespace Shiroki.VRoidStudioPlugin.TextureEditWatcher
             public static IEnumerable<CodeInstruction> ElcCallbackPatch(IEnumerable<CodeInstruction> instructions)
             {
                 MethodInfo writeAllBytesInfo = AccessTools.Method(typeof(File), nameof(File.WriteAllBytes));
-                MethodInfo fakeWriteAllBytesInfo = AccessTools.Method(typeof(MyPatch), nameof(FakeWriteAllBytesForElcCallback));
+                MethodInfo fakeWriteAllBytesInfo =
+                    AccessTools.Method(typeof(MyPatch), nameof(FakeWriteAllBytesForElcCallback));
                 foreach (CodeInstruction code in instructions)
                     if (code.opcode == OpCodes.Call && (MethodInfo) code.operand == writeAllBytesInfo)
                         yield return new CodeInstruction(OpCodes.Call, fakeWriteAllBytesInfo);
