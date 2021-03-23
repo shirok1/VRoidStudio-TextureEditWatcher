@@ -76,7 +76,8 @@ namespace Shiroki.VRoidStudioPlugin.TextureEditWatcher
 
         private static class MyPatch
         {
-            private static FileChangeWatcherExcludeFirst _currentWatcher;
+            private static readonly Dictionary<string, FileChangeWatcherExcludeFirst> Watchers =
+                new Dictionary<string, FileChangeWatcherExcludeFirst>();
 
             public static void OnViewModelChangedPostfix(object sender)
             {
@@ -118,7 +119,7 @@ namespace Shiroki.VRoidStudioPlugin.TextureEditWatcher
             public static void FakeWriteAllBytesForElcCallback(string path, byte[] bytes)
             {
                 File.WriteAllBytes(path, bytes);
-                if (string.Equals(_currentWatcher.FileName, new FileInfo(path).Name))
+                if (Watchers.ContainsKey(new FileInfo(path).Name))
                 {
                     Process.Start(_imageEditorPathConfig.Value, "\"" + path + "\"");
                     _logger.LogMessage("Starting external image editor");
@@ -142,16 +143,17 @@ namespace Shiroki.VRoidStudioPlugin.TextureEditWatcher
                     new[] {AccessTools.TypeByName("TextureLayerReferenceInfo"), typeof(string[])});
 
 
-                _currentWatcher = new FileChangeWatcherExcludeFirst(path);
-                _currentWatcher.Modified += delegate
+                var watcher = new FileChangeWatcherExcludeFirst(path);
+                Watchers.Add(fileInfo.Name, watcher);
+                watcher.Modified += delegate
                 {
                     _logger.LogMessage($"{path} was changed externally, Now importing...");
-                    _currentWatcher.Watcher.EnableRaisingEvents = false;
+                    watcher.Watcher.EnableRaisingEvents = false;
                     coroutineStarter.GetValue(
                         importLayerCoroutine.GetValue(
                             layerRefInfo.GetValue(), new[] {path}));
-                    _currentWatcher.Dispose();
-                    _currentWatcher = null;
+                    watcher.Dispose();
+                    Watchers.Remove(fileInfo.Name);
                 };
                 _logger.LogMessage($"Start watching {path}");
 

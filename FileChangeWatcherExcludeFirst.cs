@@ -5,15 +5,12 @@ namespace Shiroki.VRoidStudioPlugin.TextureEditWatcher
 {
     public class FileChangeWatcherExcludeFirst : IDisposable
     {
-        public readonly string FileName;
-
         // ReSharper disable once PrivateFieldCanBeConvertedToLocalVariable
         private bool _ignoreFirst = true;
 
         public FileChangeWatcherExcludeFirst(string path)
         {
             var fileInfo = new FileInfo(path);
-            FileName = fileInfo.Name;
 
             Watcher = new FileSystemWatcher(fileInfo.DirectoryName ?? throw new InvalidOperationException())
             {
