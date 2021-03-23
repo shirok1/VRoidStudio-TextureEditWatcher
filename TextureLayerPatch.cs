@@ -10,7 +10,6 @@ using BepInEx;
 using BepInEx.Configuration;
 using BepInEx.Logging;
 using HarmonyLib;
-using SketchUniversal;
 using UnityEngine;
 
 namespace Shiroki.VRoidStudioPlugin.TextureEditWatcher
@@ -57,7 +56,8 @@ namespace Shiroki.VRoidStudioPlugin.TextureEditWatcher
                     .GetNestedTypes(AccessTools.all)
                     .SelectMany(type => type.GetMethods(AccessTools.allDeclared))
                     .Where(method => method.GetParameters().Length != 0
-                                     && method.GetParameters()[0].ParameterType == typeof(IResponsePayload)
+                                     && method.GetParameters()[0]
+                                         .ParameterType == typeof(SketchUniversal.IResponsePayload)
                                      && method.Name.Contains("<ExportLayerCoroutine>")).ToArray();
             if (matchedMethods.Any())
             {
