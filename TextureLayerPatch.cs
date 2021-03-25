@@ -65,7 +65,7 @@ namespace Shiroki.VRoidStudioPlugin.TextureEditWatcher
                 {
                     _harmonyInstance.Patch(method,
                         transpiler: new HarmonyMethod(typeof(MyPatch), nameof(MyPatch.ElcCallbackPatch)));
-                    Logger.LogMessage($"Patched '{method.Name}'");
+                    Logger.LogMessage($"Patched '{method.Name}' in '{method.DeclaringType?.Name ?? "null"}'");
                 }
             }
             else
