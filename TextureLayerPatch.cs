@@ -61,16 +61,16 @@ namespace Shiroki.VRoidStudioPlugin.TextureEditWatcher
                                      && method.Name.Contains("<ExportLayerCoroutine>")).ToArray();
             if (matchedMethods.Any())
             {
-                Logger.LogError("Can't find 'EnqueueCommand' callback!");
-            }
-            else
-            {
                 foreach (var method in matchedMethods)
                 {
                     _harmonyInstance.Patch(method,
                         transpiler: new HarmonyMethod(typeof(MyPatch), nameof(MyPatch.ElcCallbackPatch)));
                     Logger.LogMessage($"Patched '{method.Name}'");
                 }
+            }
+            else
+            {
+                Logger.LogError("Can't find 'EnqueueCommand' callback!");
             }
         }
 
