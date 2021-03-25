@@ -18,6 +18,10 @@ namespace Shiroki.VRoidStudioPlugin.TextureEditWatcher
     public class TextureLayerPatch : BaseUnityPlugin
     {
         private const string PluginGuid = "Shiroki.VRoidStudioPlugin.TextureEditWatcher";
+
+        private static string ExportCachePath =>
+            Path.Combine(Application.temporaryCachePath, nameof(TextureEditWatcher));
+
         private static Harmony _harmonyInstance;
         private static ManualLogSource _logger;
 
@@ -31,8 +35,7 @@ namespace Shiroki.VRoidStudioPlugin.TextureEditWatcher
 
         public void Start()
         {
-            var directoryInfo =
-                new DirectoryInfo(Path.Combine(Application.temporaryCachePath, nameof(TextureEditWatcher)));
+            var directoryInfo = new DirectoryInfo(ExportCachePath);
             if (!directoryInfo.Exists) directoryInfo.Create();
 
             _logger = Logger;
@@ -94,7 +97,8 @@ namespace Shiroki.VRoidStudioPlugin.TextureEditWatcher
                                         .Method("StartCoroutine", new[] {typeof(IEnumerator)});
                                     startCoroutine.GetValue(
                                         ExternalEditCoroutine(layerRefInfo,
-                                            GenerateTempPath(
+                                            Path.Combine(
+                                                ExportCachePath,
                                                 observableTextureLayer.Property("DisplayName").GetValue<string>()
                                                 + "."
                                                 + observableTextureLayer.Property("Info").Field("id").GetValue<string>()
@@ -124,11 +128,6 @@ namespace Shiroki.VRoidStudioPlugin.TextureEditWatcher
                     Process.Start(_imageEditorPathConfig.Value, "\"" + path + "\"");
                     _logger.LogMessage("Starting external image editor");
                 }
-            }
-
-            private static string GenerateTempPath(string fileName)
-            {
-                return Path.Combine(Application.temporaryCachePath, nameof(TextureEditWatcher), fileName);
             }
 
             private static IEnumerator ExternalEditCoroutine
